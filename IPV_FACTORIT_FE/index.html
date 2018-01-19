@@ -1,0 +1,508 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+
+    <!-- init fonts -->
+    <link href='https://fonts.googleapis.com/css?family=Anton|Oswald|Roboto+Slab' rel='stylesheet' type='text/css' />
+    <link href="http://db.onlinewebfonts.com/c/f3fa86edfc2b810bf7a3ea7cf010d292?family=Roboto" rel="stylesheet" type="text/css" />
+    <link href="http://db.onlinewebfonts.com/c/5673da52c98bb6cb33ada5aaf649703e?family=RobotoRegular" rel="stylesheet" type="text/css" />
+    <link href="http://db.onlinewebfonts.com/c/866186b8ca0d1844fc7e2771c2d9ce6c?family=HelveticaBold" rel="stylesheet" type="text/css" />
+    <link href="http://db.onlinewebfonts.com/c/bec9cfcd690948400517b31821c873e1?family=Helvetica" rel="stylesheet" type="text/css" />
+    <link href="http://db.onlinewebfonts.com/c/7ff4438405bfb9fe87b606ca356ba6a0?family=Roboto+Condensed" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="css/jquery-ui.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.10.0/css/bootstrap-select.min.css">
+
+    <!-- init app scripts -->
+    <script src="js/jquery-2.1.4.min.js"></script>
+    <script src="js/underscore-min.js"></script>
+    <script src="js/backbone-min.js"></script>
+    <script src="js/utility.js"></script>
+
+    <!-- init style-sheet -->
+    <script src="js/jquery-2.1.4.min.js"></script>
+    <script src="http://code.jquery.com/ui/1.9.1/jquery-ui.js"></script>
+    <script src="js/datepicker-it.js"></script>
+    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+
+    <!-- Init lang -->
+    <script src="utility/app.init.lang.js"></script>
+    <!-- init app controls -->
+    <script src="controls/app.init.alert.js"></script>
+    <script src="controls/app.init.error.js"></script>
+    <script src="controls/app.init.loader.js"></script>
+    <!-- init model session -->
+    <script src="models/app.model.session.js"></script>
+    <!-- Init storage -->
+    <script src="utility/app.init.storage.js"></script>
+    <!-- init config -->
+    <script src="config/app.config.js"></script>
+    <!-- Init errors -->
+    <script src="errors/app.error.print.js"></script>
+
+    <!-- init style-sheet -->
+    <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="css/wrapper.css" />
+
+
+    <script>
+        var arrExcluded = '';
+        function setExcluded(IdPratica, IsDeregulation) {
+            try {
+                spinner.show();
+                var terms = {
+                    IdPratica: IdPratica,
+                    IsDeregulation: IsDeregulation
+                };
+                var formData = new FormData();
+                formData.append("terms", JSON.stringify(terms));
+                userStorage = JSON.parse(localStorage.getItem("session"));
+                $.ajax({
+                    url: appConfig.apiPrefix + 'FCT_setExcluded',
+                    data: formData,
+                    type: 'POST',
+                    contentType: false,
+                    processData: false,
+                    headers: {
+                        lang: userStorage.lang,
+                        //licencekey: "testLicenceKey0123"
+                    },
+                    success: function (data, textStatus, jqXHR) {
+                        if (textStatus == "success") {
+                        }
+                        spinner.hide();
+                    },
+                    error: function () {
+                        displayError(appMessage.defaultError);
+                    }
+                });
+            }
+            catch (err) {
+                displayError(appMessage.defaultError);
+            }
+        }
+        function post_dainviare_confirm() {
+            try {
+                spinner.show();
+                var terms = {
+                    dateFrom: $('#txt-dateFrom').val(),
+                    dateTo: $('#txt-dateTo').val()
+                };
+                var formData = new FormData();
+                formData.append("terms", JSON.stringify(terms));
+
+                userStorage = JSON.parse(localStorage.getItem("session"));
+                $.ajax({
+                    url: appConfig.apiPrefix + 'FCT_daspedire',
+                    data: formData,
+                    type: 'POST',
+                    contentType: false,
+                    processData: false,
+                    headers: {
+                        lang: userStorage.lang,
+                    },
+                    success: function (data, textStatus, jqXHR) {
+                        if (textStatus == "success") {
+                            appNotify.title = "Invio pratiche";
+                            appNotify.text = "Elaborazione eseguita con successo.";
+                            appNotify.show();
+                            load_inviate();
+                        }
+                        spinner.hide();
+                    },
+                    error: function () {
+                        displayError(appMessage.defaultError);
+                    }
+                });
+            }
+            catch (err) {
+                displayError(appMessage.defaultError);
+            }
+
+        }
+        $(function () {
+            $('input[type=radio][name=optradio]').change(function () {
+                switch (this.value) {
+                    case '0': load_daelaborare(); break;
+                    case '1': load_dainviare(); break;
+                    case '2': load_inviate(); break;
+                }
+            });
+            $('#btn-elabora').click(function () {
+                switch ($("input[name='optradio']:checked").val()) {
+                    case '0': post_daelaborare(); break;
+                    case '1': post_dainviare(); break;
+                }
+            });
+            $('#btn-cerca-daelaborare').click(function () {
+                switch ($("input[name='optradio']:checked").val()) {
+                    case '0': load_daelaborare(); break;
+                    case '1': load_dainviare(); break;
+                    case '2': load_inviate(); break;
+                }
+            });
+            function post_daelaborare () {
+                try {
+                    spinner.show();
+                    var terms = {
+                        dateFrom: $('#txt-dateFrom').val(),
+                        dateTo: $('#txt-dateTo').val(),
+                        excluded: arrExcluded
+                    };
+                    var formData = new FormData();
+                    formData.append("terms", JSON.stringify(terms));
+
+                    userStorage = JSON.parse(localStorage.getItem("session"));
+                    $.ajax({
+                        url: appConfig.apiPrefix + 'FCT_daelaborare',
+                        data: formData,
+                        type: 'POST',
+                        contentType: false,
+                        processData: false,
+                        headers: {
+                            lang: userStorage.lang,
+                            //licencekey: "testLicenceKey0123"
+                        },
+                        success: function (data, textStatus, jqXHR) {
+                            if (textStatus == "success") {
+                                $("#opt_1").prop("checked", true);
+                                load_dainviare();
+                            }
+                            spinner.hide();
+                        },
+                        error: function () {
+                            displayError(appMessage.defaultError);
+                        }
+                    });
+                }
+                catch (err) {
+                    displayError(appMessage.defaultError);
+                }
+            }
+            function post_dainviare() {
+                appAlert.collection.defaultConfirm = appMessage.defaultConfirm;
+                appAlert.collection.doubleConfirm = appMessage.doubleConfirm;
+                appAlert.collection.onConfirm = "post_dainviare_confirm";
+                appAlert.collection.title = "Invio pratiche";
+                appAlert.show();
+            }
+            function load_inviate() {
+                try {
+                    /* 
+                    Carico tutte le pratiche che:
+                        - sono state elaborate (IsInit = 1) ed invitate a Factorit (IsSent = 1)
+                    */
+                    spinner.show();
+                    var terms = {
+                        dateFrom: $('#txt-dateFrom').val(),
+                        dateTo: $('#txt-dateTo').val(),
+                        excluded: arrExcluded,
+                        option: 0
+                    };
+                    var header = $("#container_header");
+                    var container = $("#container_pratiche");
+                    userStorage = JSON.parse(localStorage.getItem("session"));
+                    $.ajax({
+                        url: appConfig.apiPrefix + 'FCT_inviate',
+                        dataType: 'json',
+                        contentType: 'application/json',
+                        data: terms,
+                        type: 'GET',
+                        headers: {
+                            lang: userStorage.lang,
+                            //licencekey: "testLicenceKey0123"
+                        },
+                        success: function (data) {
+                            /* printing pratiche-header */
+                            header.empty();
+                            var content_header = '';
+                            content_header += '<tr>';
+                            content_header += '<th>#</th>';
+                            content_header += '<th>Protocollo</th>';
+                            content_header += '<th>Debitore</th>';
+                            content_header += '<th>Data partenza</th>';
+                            content_header += '<th>Importo</th>';
+                            content_header += '<th>Acconto</th>';
+                            content_header += '<th>Saldo</th>';
+                            content_header += '</tr>';
+                            header.append(content_header);
+
+                            container.empty();
+                            if (data.length > 0) {
+                                $('#countPratiche').html('Pratiche trovate: ' + data.length);
+                                /* printing pratiche-content */
+                                $.each(data, function (key, pratica) {
+                                    var cssIsDeregulation = '';
+                                    var cssIsChecked = 'checked="checked"';
+                                    if (pratica.isDeregulation == 'True') {
+                                        cssIsDeregulation = ' class="danger"';
+                                        cssIsChecked = '';
+                                        arrExcluded += ';' + pratica.IdPratica;
+                                    }
+                                    var content = '<tr' + cssIsDeregulation + '>';
+                                    content += '<td><input class="select" type="checkbox" ' + cssIsChecked + ' value="' + pratica.IdPratica + '"></td>';
+                                    content += '<td>' + pratica.numPratica + '</td>';
+                                    content += '<td>' + pratica.debitore + '</td>';
+                                    content += '<td>' + pratica.dataPartenza + '</td>';
+                                    content += '<td>' + pratica.importo + '</td>';
+                                    content += '<td>' + pratica.acconto + '</td>';
+                                    content += '<td>' + pratica.saldo + '</td>';
+                                    content += '</tr>';
+                                    container.append(content);
+                                });
+                                $('#container_pratiche .select').click(function () {
+                                });
+                                //initLang();
+                            }
+                            else {
+                                $('#countPratiche').html('Pratiche trovate: 0');
+                                //alert("no data");
+                            }
+                            spinner.hide();
+                        },
+                        error: function () {
+                            displayError(appMessage.defaultError);
+                        }
+                    });
+                }
+                catch (err) {
+                    displayError(appMessage.defaultError);
+                }
+            }
+            function load_dainviare() {
+                try {
+                    /* 
+                    Carico tutte le pratiche che:
+                        - sono state elaborate (IsInit = 1) e non ancora inviate (IsSent = 0)
+                    */
+                    spinner.show();
+                    var terms = {
+                        dateFrom: $('#txt-dateFrom').val(),
+                        dateTo: $('#txt-dateTo').val(),
+                        excluded: arrExcluded,
+                        option: 0
+                    };
+                    var header = $("#container_header");
+                    var container = $("#container_pratiche");
+                    userStorage = JSON.parse(localStorage.getItem("session"));
+                    $.ajax({
+                        url: appConfig.apiPrefix + 'FCT_dainviare',
+                        dataType: 'json',
+                        contentType: 'application/json',
+                        data: terms,
+                        type: 'GET',
+                        headers: {
+                            lang: userStorage.lang,
+                            //licencekey: "testLicenceKey0123"
+                        },
+                        success: function (data) {
+                            /* printing pratiche-header */
+                            header.empty();
+                            var content_header = '';
+                            content_header += '<tr>';
+                            content_header += '<th>#</th>';
+                            content_header += '<th>Protocollo</th>';
+                            content_header += '<th>Debitore</th>';
+                            content_header += '<th>Data partenza</th>';
+                            content_header += '<th>Importo</th>';
+                            content_header += '</tr>';
+                            header.append(content_header);
+
+                            container.empty();
+                            if (data.length > 0) {
+                                $('#countPratiche').html('Pratiche trovate: ' + data.length);
+                                /* printing pratiche-content */
+                                $.each(data, function (key, pratica) {
+                                    var cssIsDeregulation = '';
+                                    var cssIsChecked = 'checked="checked"';
+                                    if (pratica.isDeregulation == 'True') {
+                                        cssIsDeregulation = ' class="danger"';
+                                        cssIsChecked = '';
+                                        arrExcluded += ';' + pratica.IdPratica;
+                                    }
+                                    var content = '<tr' + cssIsDeregulation + '>';
+                                    content += '<td><input class="select" type="checkbox" ' + cssIsChecked + ' value="' + pratica.IdPratica + '"></td>';
+                                    content += '<td>' + pratica.numPratica + '</td>';
+                                    content += '<td>' + pratica.debitore + '</td>';
+                                    content += '<td>' + pratica.dataPartenza + '</td>';
+                                    content += '<td>' + pratica.importo + '</td>';
+                                    content += '</tr>';
+                                    container.append(content);
+                                });
+                                $('#container_pratiche .select').click(function () {
+                                    //alert($(this).attr('value'));
+                                    if ($(this).prop("checked")) {
+                                        arrExcluded = arrExcluded.split(';' + $(this).attr('value')).join('');
+                                        $(this).parent().parent('tr').removeClass('danger');
+                                        setExcluded($(this).attr('value'), 0);
+                                    } else {
+                                        arrExcluded += ';' + $(this).attr('value');
+                                        $(this).parent().parent('tr').removeClass().addClass('danger');
+                                        setExcluded($(this).attr('value'), 1);
+                                    }
+                                    console.log('arrIdPratiche: ' + arrExcluded);
+                                });
+                                $('#btn-elabora').removeClass('btn btn-primary disabled').addClass('btn btn-primary');
+                                //initLang();
+                            }
+                            else {
+                                $('#countPratiche').html('Pratiche trovate: 0');
+                                //alert("no data");
+                            }
+                            spinner.hide();
+                        },
+                        error: function () {
+                            displayError(appMessage.defaultError);
+                        }
+                    });
+                }
+                catch (err) {
+                    displayError(appMessage.defaultError);
+                }
+            }
+            function load_daelaborare() {
+                try {
+                    /* 
+                    Carico tutte le pratiche che:
+                        - non sono mai state elaborate (IsInit = 0), OR
+                        - elaborate AND (@TotAvereIdee è diverso da @TotAvereIdeeOld)
+                    */
+                    spinner.show();
+                    var terms = {
+                        dateFrom: $('#txt-dateFrom').val(),
+                        dateTo: $('#txt-dateTo').val(),
+                        excluded: arrExcluded
+                    };
+                    var header = $("#container_header");
+                    var container = $("#container_pratiche");
+                    userStorage = JSON.parse(localStorage.getItem("session"));
+                    $.ajax({
+                        url: appConfig.apiPrefix + 'FCT_daelaborare',
+                        dataType: 'json',
+                        contentType: 'application/json',
+                        data: terms,
+                        type: 'GET',
+                        headers: {
+                            lang: userStorage.lang,
+                            //licencekey: "testLicenceKey0123"
+                        },
+                        success: function (data) {
+                            /* printing pratiche-header */
+                            header.empty();
+                            var content_header = '';
+                            content_header += '<tr>';
+                            content_header += '<th>#</th>';
+                            content_header += '<th>Protocollo</th>';
+                            content_header += '<th>Debitore</th>';
+                            content_header += '<th>Data partenza</th>';
+                            content_header += '<th>Importo</th>';
+                            content_header += '</tr>';
+                            header.append(content_header);
+
+                            container.empty();
+                            if (data.length > 0) {
+                                $('#countPratiche').html('Pratiche trovate: ' + data.length);
+                                /* printing pratiche-content */
+                                $.each(data, function (key, pratica) {
+                                    var content = '<tr>';
+                                    content += '<td><input class="select" type="checkbox" checked="checked" value="' + pratica.IdPratica + '"></td>';
+                                    content += '<td>' + pratica.numPratica + '</td>';
+                                    content += '<td>' + pratica.debitore + '</td>';
+                                    content += '<td>' + pratica.dataPartenza + '</td>';
+                                    content += '<td>' + pratica.importo + '</td>';
+                                    content += '</tr>';
+                                    container.append(content);
+                                });
+                                $('#container_pratiche .select').click(function () {
+                                    //alert($(this).attr('value'));
+                                    if ($(this).prop("checked")) {
+                                        arrExcluded = arrExcluded.split(';' + $(this).attr('value')).join('');
+                                        $(this).parent().parent('tr').removeClass('danger');
+                                    } else {
+                                        arrExcluded += ';' + $(this).attr('value');
+                                        $(this).parent().parent('tr').removeClass().addClass('danger');
+                                    }
+                                    console.log('arrIdPratiche: ' + arrExcluded);
+                                });
+                                $('#btn-elabora').removeClass('btn btn-primary disabled').addClass('btn btn-primary');
+                                //initLang();
+                            }
+                            else {
+                                $('#countPratiche').html('Pratiche trovate: 0');
+                                //alert("no data");
+                            }
+                            spinner.hide();
+                        },
+                        error: function () {
+                            displayError(appMessage.defaultError);
+                        }
+                    });
+                }
+                catch (err) {
+                    displayError(appMessage.defaultError);
+                }
+            }
+        });
+    </script>
+</head>
+<body>
+    <div id="container_alert"></div>
+    <div id="container_error"></div>
+    <div id="container_loader"></div>
+    <div class="container-fluid">
+        <h2>
+            <strong>Factorit</strong> / Scambio dati Cedenti
+        </h2>
+        <div class="table-responsive" style="border:0;">
+            <div class="col-xs-12">
+                <div class="form-inline">
+                    <label class="radio-inline"><input id="opt_0" type="radio" name="optradio" value="0" checked="checked">Da elaborare</label>
+                    <label class="radio-inline"><input id="opt_1" type="radio" name="optradio" value="1">Pronte da inviare</label>
+                    <label class="radio-inline"><input id="opt_2" type="radio" name="optradio" value="2">Inviate a FACTORIT</label>
+                    <hr />
+                </div>
+            </div>
+            <div class="col-xs-12">
+                <form class="form-inline">
+                    <div class="form-group">
+                        <input type="text" class="form-control data" id="txt-dateFrom" placeholder="Es: 01/01/2016">
+                    </div>
+                    <div class="form-group">
+                        <input type="text" class="form-control data" id="txt-dateTo" placeholder="Es: 17/05/2016">
+                    </div>
+                    <a href="#" class="btn btn-default" id="btn-cerca-daelaborare" data-toggle="tooltip" title="Avvia la ricerca">
+                        <strong>
+                            CERCA
+                        </strong>
+                    </a>
+                </form>
+            </div>
+            <div class="col-xs-12">
+                <hr />
+                <h5 id="countPratiche"></h5>
+                <a href="#" class="btn btn-primary disabled" id="btn-elabora">
+                    <strong>
+                        ELABORA
+                    </strong>
+                </a>
+            </div>
+            <div class="col-xs-12 bg-white" style="padding:14px; margin-top:10px;">
+                <table class="table table-hover bg-white">
+                    <thead id="container_header"></thead>
+                    <tbody id="container_pratiche"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <script>
+        $(function () {
+            $.datepicker.setDefaults($.datepicker.regional['it']);
+            $(".data:input").datepicker();
+            $('[data-toggle="tooltip"]').tooltip();
+        });
+    </script>
+</body>
+</html>
