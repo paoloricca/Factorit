@@ -6,7 +6,6 @@
     <head runat="server">
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
         <title></title>
-
     <!-- init fonts -->
     <link href='https://fonts.googleapis.com/css?family=Anton|Oswald|Roboto+Slab' rel='stylesheet' type='text/css' />
     <link href='https://fonts.googleapis.com/css?family=Roboto:300,300,400,700,900' rel='stylesheet' type='text/css' />

@@ -20,6 +20,7 @@ namespace IPV_FACTORIT_FE
             try
             {
                 //DB.Apri(SiNo.Si);
+
                 //Procedura.Strutturata prcGetIncassiTrv = new Procedura.Strutturata("SELECT DISTINCT T_FCT_Pratiche.CodiceDebitore, T_FCT_Pratiche_Ratei.NumPratica, T_FCT_Pratiche.IDPratica FROM T_FCT_Pratiche_Ratei inner join T_FCT_Pratiche on T_FCT_Pratiche_Ratei.idFctPratica = T_FCT_Pratiche.idFctPratica where T_FCT_Pratiche_Ratei.Datascadenza = '2018-01-07 00:00:00.000' group by T_FCT_Pratiche.CodiceDebitore, T_FCT_Pratiche_Ratei.NumPratica, T_FCT_Pratiche.IDPratica", DB.Connessione, DB.Transazione);
                 //DataView readerIncassiTrv = (DataView)prcGetIncassiTrv.Esegui(Procedura.Ritorna.DataView);
                 //decimal totalePratica = 0;
