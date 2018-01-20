@@ -14,6 +14,7 @@
 
     <!-- init app scripts -->
     <script src="js/jquery-2.1.4.min.js"></script>
+
     <script src="js/underscore-min.js"></script>
     <script src="js/backbone-min.js"></script>
     <script src="js/utility.js"></script>
